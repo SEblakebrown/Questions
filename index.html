@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Be My Valentine?</title>
+  <style>
+    :root { color-scheme: dark; }
+    html, body { height: 100%; margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    body {
+      display: grid;
+      place-items: center;
+      background: radial-gradient(1200px 800px at 50% 35%, #2a0033 0%, #120015 45%, #050006 100%);
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .card {
+      position: relative;
+      text-align: center;
+      padding: 36px 28px 28px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+      backdrop-filter: blur(10px);
+      min-width: min(420px, calc(100vw - 32px));
+    }
+
+    h1 {
+      margin: 0 0 18px;
+      font-size: clamp(26px, 4vw, 40px);
+      letter-spacing: 0.3px;
+    }
+
+    .sub {
+      margin: 0 0 22px;
+      opacity: 0.85;
+      font-size: 15px;
+    }
+
+    .row {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      height: 64px; /* gives the No button space to jump */
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 20px;
+      font-size: 16px;
+      font-weight: 650;
+      cursor: pointer;
+      transition: transform 120ms ease, filter 120ms ease;
+      will-change: transform;
+    }
+    button:active { transform: translateY(1px) scale(0.98); }
+
+    #yes {
+      background: linear-gradient(135deg, #ff4da6 0%, #ff2e6a 55%, #ff7b7b 100%);
+      color: white;
+      box-shadow: 0 10px 25px rgba(255, 46, 106, 0.35);
+    }
+    #yes:hover { filter: brightness(1.05); }
+
+    #no {
+      position: absolute;
+      left: 50%;
+      transform: translateX(70px); /* start a bit to the right of center */
+      background: rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.88);
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.35);
+      touch-action: none;
+    }
+
+    canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .message {
+      margin-top: 18px;
+      font-size: 18px;
+      font-weight: 650;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 300ms ease, transform 300ms ease;
+    }
+    .message.show { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+  <canvas id="fx"></canvas>
+
+  <div class="card" id="card">
+    <h1>Will you be my Valentine? 💘</h1>
+    <p class="sub">Choose wisely 😇</p>
+
+    <div class="row" id="row">
+      <button id="yes">Yes</button>
+      <button id="no" aria-label="No (good luck)">No</button>
+    </div>
+
+    <div class="message" id="msg">YAY!!! 💖💖💖</div>
+  </div>
+
+  <script>
+    // ---------- "No" button dodge ----------
+    const noBtn = document.getElementById("no");
+    const yesBtn = document.getElementById("yes");
+    const row = document.getElementById("row");
+    const card = document.getElementById("card");
+    const msg = document.getElementById("msg");
+
+    // Place "No" initially within the row bounds
+    function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
+
+    function moveNoButton(avoidX, avoidY) {
+      const rowRect = row.getBoundingClientRect();
+      const btnRect = noBtn.getBoundingClientRect();
+
+      // Compute bounds where the button can live (inside row)
+      const minX = rowRect.left;
+      const maxX = rowRect.right - btnRect.width;
+      const minY = rowRect.top;
+      const maxY = rowRect.bottom - btnRect.height;
+
+      // Pick a new spot that's far-ish from cursor
+      let x, y;
+      for (let i = 0; i < 20; i++) {
+        x = minX + Math.random() * (maxX - minX);
+        y = minY + Math.random() * (maxY - minY);
+        const dx = (x + btnRect.width/2) - avoidX;
+        const dy = (y + btnRect.height/2) - avoidY;
+        if (Math.hypot(dx, dy) > 120) break;
+      }
+
+      // Convert to translate from row origin
+      const relX = clamp(x - rowRect.left, 0, rowRect.width - btnRect.width);
+      const relY = clamp(y - rowRect.top, 0, rowRect.height - btnRect.height);
+
+      noBtn.style.left = `${relX}px`;
+      noBtn.style.top  = `${relY}px`;
+      noBtn.style.transform = `translate(0, 0)`;
+    }
+
+    // Initialize absolute positioning within row
+    (function initNoButton(){
+      const rowRect = row.getBoundingClientRect();
+      noBtn.style.left = `${rowRect.width * 0.58}px`;
+      noBtn.style.top  = `${(rowRect.height - noBtn.offsetHeight) / 2}px`;
+      noBtn.style.transform = `translate(0, 0)`;
+    })();
+
+    function shouldDodge(clientX, clientY) {
+      const r = noBtn.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      return Math.hypot(clientX - cx, clientY - cy) < 90;
+    }
+
+    window.addEventListener("mousemove", (e) => {
+      if (shouldDodge(e.clientX, e.clientY)) moveNoButton(e.clientX, e.clientY);
+    });
+
+    // Touch: if they try to tap near it, it moves
+    window.addEventListener("touchstart", (e) => {
+      const t = e.touches[0];
+      if (!t) return;
+      if (shouldDodge(t.clientX, t.clientY)) {
+        moveNoButton(t.clientX, t.clientY);
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    // If they somehow click "No", it still dodges instantly
+    noBtn.addEventListener("pointerdown", (e) => {
+      moveNoButton(e.clientX, e.clientY);
+      e.preventDefault();
+    });
+
+    // ---------- Heart fireworks ----------
+    const canvas = document.getElementById("fx");
+    const ctx = canvas.getContext("2d");
+    let W, H, DPR;
+
+    function resize() {
+      DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+      W = Math.floor(window.innerWidth * DPR);
+      H = Math.floor(window.innerHeight * DPR);
+      canvas.width = W;
+      canvas.height = H;
+      canvas.style.width = window.innerWidth + "px";
+      canvas.style.height = window.innerHeight + "px";
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    const particles = [];
+    function rand(min, max) { return min + Math.random() * (max - min); }
+
+    // Parametric heart curve (classic)
+    // x = 16 sin^3 t
+    // y = 13 cos t - 5 cos 2t - 2 cos 3t - cos 4t
+    function heartPoint(t) {
+      const x = 16 * Math.pow(Math.sin(t), 3);
+      const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+      return { x, y };
+    }
+
+    function spawnHeartFireworks(centerX, centerY) {
+      // scale based on viewport
+      const scale = Math.min(window.innerWidth, window.innerHeight) * 0.018;
+      const count = 220;
+
+      for (let i = 0; i < count; i++) {
+        const t = (i / count) * Math.PI * 2;
+        const p = heartPoint(t);
+
+        // Place particles along the heart outline
+        const x = centerX + p.x * scale;
+        const y = centerY - p.y * scale;
+
+        // Velocity: outward from center with randomness
+        const dx = x - centerX;
+        const dy = y - centerY;
+        const mag = Math.hypot(dx, dy) || 1;
+        const vx = (dx / mag) * rand(2.2, 5.2) + rand(-0.6, 0.6);
+        const vy = (dy / mag) * rand(2.2, 5.2) + rand(-0.6, 0.6);
+
+        particles.push({
+          x: x * DPR,
+          y: y * DPR,
+          vx: vx * DPR,
+          vy: vy * DPR,
+          life: rand(50, 90),
+          size: rand(1.2, 2.6) * DPR,
+          // pretty pink-red-white range
+          hue: rand(330, 10) + (Math.random() < 0.4 ? 360 : 0),
+          sat: rand(70, 100),
+          lum: rand(55, 75),
+          alpha: 1
+        });
+      }
+
+      // A second burst for extra "fireworks" feel
+      setTimeout(() => {
+        for (let k = 0; k < 90; k++) {
+          const ang = rand(0, Math.PI * 2);
+          const spd = rand(2.0, 6.0);
+          particles.push({
+            x: centerX * DPR,
+            y: centerY * DPR,
+            vx: Math.cos(ang) * spd * DPR,
+            vy: Math.sin(ang) * spd * DPR,
+            life: rand(35, 65),
+            size: rand(1.0, 2.2) * DPR,
+            hue: rand(330, 20) + (Math.random() < 0.35 ? 360 : 0),
+            sat: rand(70, 100),
+            lum: rand(55, 75),
+            alpha: 1
+          });
+        }
+      }, 160);
+    }
+
+    function tick() {
+      // fade trail
+      ctx.fillStyle = "rgba(0,0,0,0.18)";
+      ctx.fillRect(0, 0, W, H);
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.life -= 1;
+        p.vy += 0.035 * DPR; // gravity
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha = Math.max(0, p.life / 90);
+
+        ctx.beginPath();
+        ctx.fillStyle = `hsla(${p.hue % 360}, ${p.sat}%, ${p.lum}%, ${p.alpha})`;
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (p.life <= 0) particles.splice(i, 1);
+      }
+
+      requestAnimationFrame(tick);
+    }
+    tick();
+
+    // ---------- Yes click ----------
+    let done = false;
+    yesBtn.addEventListener("click", () => {
+      if (done) return;
+      done = true;
+
+      msg.classList.add("show");
+
+      // center fireworks around card
+      const r = card.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+
+      spawnHeartFireworks(cx, cy);
+
+      // optional: disable buttons after yes
+      yesBtn.disabled = true;
+      noBtn.style.display = "none";
+    });
+  </script>
+</body>
+</html>
