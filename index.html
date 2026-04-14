@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>A Question For You</title>
+    <meta
+      name="description"
+      content="A sweet little question page made with love."
+    />
+    <style>
+      :root {
+        --ink: #1f2328;
+        --soft-ink: #5f6673;
+        --paper: #fff9f7;
+        --white: #ffffff;
+        --coral: #f25f5c;
+        --rose: #ff8a80;
+        --teal: #1b998b;
+        --mint: #d8f3dc;
+        --gold: #ffd166;
+        --shadow: 0 24px 80px rgba(31, 35, 40, 0.16);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        background:
+          linear-gradient(180deg, rgba(255, 249, 247, 0.92), rgba(216, 243, 220, 0.9)),
+          url("https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=1600&q=80")
+            center / cover fixed;
+      }
+
+      button,
+      textarea,
+      input {
+        font: inherit;
+      }
+
+      .page {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 28px 16px;
+      }
+
+      .question-card {
+        width: min(100%, 520px);
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        backdrop-filter: blur(12px);
+      }
+
+      .photo-strip {
+        min-height: 160px;
+        display: grid;
+        align-items: end;
+        padding: 18px;
+        color: var(--white);
+        background:
+          linear-gradient(180deg, rgba(31, 35, 40, 0), rgba(31, 35, 40, 0.62)),
+          url("https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=1200&q=80")
+            center / cover;
+      }
+
+      .photo-strip p {
+        margin: 0;
+        max-width: 28rem;
+        font-size: 0.94rem;
+        line-height: 1.5;
+        text-shadow: 0 2px 12px rgba(0, 0, 0, 0.34);
+      }
+
+      .content {
+        padding: clamp(22px, 6vw, 34px);
+      }
+
+      .eyebrow {
+        margin: 0 0 10px;
+        color: var(--teal);
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(2.4rem, 14vw, 4.8rem);
+        line-height: 0.92;
+        letter-spacing: 0;
+      }
+
+      .subtitle {
+        margin: 18px 0 0;
+        color: var(--soft-ink);
+        font-size: 1rem;
+        line-height: 1.6;
+      }
+
+      form {
+        margin-top: 24px;
+      }
+
+      .button-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .question-block {
+        margin-bottom: 18px;
+      }
+
+      .question-label {
+        margin: 0 0 10px;
+        font-size: 1.18rem;
+        font-weight: 900;
+        line-height: 1.25;
+      }
+
+      .choice {
+        min-height: 58px;
+        border: 0;
+        border-radius: 8px;
+        color: var(--white);
+        cursor: pointer;
+        font-weight: 850;
+        transition:
+          transform 160ms ease,
+          box-shadow 160ms ease,
+          opacity 160ms ease;
+      }
+
+      .choice:hover,
+      .choice:focus-visible {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 30px rgba(31, 35, 40, 0.18);
+        outline: 0;
+      }
+
+      .choice.is-selected {
+        box-shadow:
+          0 0 0 4px rgba(255, 209, 102, 0.7),
+          0 14px 30px rgba(31, 35, 40, 0.18);
+      }
+
+      .choice[data-answer="Yes"] {
+        background: var(--teal);
+      }
+
+      .choice[data-answer="Absolutely yes"] {
+        background: var(--coral);
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--soft-ink);
+        font-size: 0.94rem;
+        font-weight: 700;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 112px;
+        resize: vertical;
+        border: 2px solid rgba(31, 35, 40, 0.1);
+        border-radius: 8px;
+        padding: 14px;
+        color: var(--ink);
+        background: var(--paper);
+        line-height: 1.5;
+      }
+
+      textarea:focus {
+        border-color: var(--teal);
+        outline: 0;
+      }
+
+      .submit {
+        width: 100%;
+        min-height: 56px;
+        margin-top: 14px;
+        border: 0;
+        border-radius: 8px;
+        color: var(--ink);
+        background: var(--gold);
+        cursor: pointer;
+        font-weight: 900;
+        transition:
+          transform 160ms ease,
+          box-shadow 160ms ease;
+      }
+
+      .submit:hover,
+      .submit:focus-visible {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 30px rgba(31, 35, 40, 0.16);
+        outline: 0;
+      }
+
+      .status {
+        min-height: 24px;
+        margin: 14px 0 0;
+        color: var(--soft-ink);
+        font-size: 0.94rem;
+        line-height: 1.5;
+      }
+
+      .tiny {
+        margin: 18px 0 0;
+        color: var(--soft-ink);
+        font-size: 0.82rem;
+        line-height: 1.45;
+      }
+
+      .hearts {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+
+      .heart {
+        position: absolute;
+        bottom: -30px;
+        font-size: 24px;
+        animation: float-up 2200ms ease-out forwards;
+      }
+
+      @keyframes float-up {
+        from {
+          transform: translateY(0) scale(0.9) rotate(0deg);
+          opacity: 0;
+        }
+
+        18% {
+          opacity: 1;
+        }
+
+        to {
+          transform: translateY(-115vh) scale(1.5) rotate(18deg);
+          opacity: 0;
+        }
+      }
+
+      @media (max-width: 430px) {
+        .page {
+          padding: 14px;
+          align-items: stretch;
+        }
+
+        .question-card {
+          margin: auto 0;
+        }
+
+        .button-row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="question-card" aria-labelledby="question-title">
+        <div class="photo-strip">
+          <p>I have two very important questions, and yes, this is officially serious business.</p>
+        </div>
+
+        <div class="content">
+          <p class="eyebrow">Question time</p>
+          <h1 id="question-title">Do you love me?</h1>
+          <p class="subtitle">
+            Pick the answers that feel right, then leave me a little note.
+          </p>
+
+          <form id="love-form">
+            <input type="hidden" name="question_one" value="Do you love me?" />
+            <input type="hidden" name="question_two" value="Will you peg me?" />
+            <input id="love-answer-input" type="hidden" name="love_answer" value="" />
+            <input id="peg-answer-input" type="hidden" name="peg_answer" value="" />
+
+            <div class="question-block">
+              <p class="question-label">Do you love me?</p>
+              <div class="button-row" aria-label="Do you love me answer choices">
+                <button class="choice" type="button" data-target="love" data-answer="Yes">Yes</button>
+                <button class="choice" type="button" data-target="love" data-answer="Absolutely yes">
+                  Absolutely yes
+                </button>
+              </div>
+            </div>
+
+            <div class="question-block">
+              <p class="question-label">Will you peg me?</p>
+              <div class="button-row" aria-label="Will you peg me answer choices">
+                <button class="choice" type="button" data-target="peg" data-answer="Yes">Yes</button>
+                <button class="choice" type="button" data-target="peg" data-answer="Absolutely yes">
+                Absolutely yes
+                </button>
+              </div>
+            </div>
+
+            <label for="message">Say something sweet</label>
+            <textarea
+              id="message"
+              name="message"
+              placeholder="Type your answer here..."
+              required
+            ></textarea>
+
+            <button class="submit" type="submit">Send my answer</button>
+            <p class="status" id="status" role="status" aria-live="polite"></p>
+            <p class="tiny">
+              This page is ready for GitHub Pages. Add your Formspree endpoint in
+              the script before you send the link.
+            </p>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <div class="hearts" id="hearts" aria-hidden="true"></div>
+
+    <script>
+      const FORM_ENDPOINT = "https://formspree.io/f/myklyqjn";
+
+      const form = document.querySelector("#love-form");
+      const loveAnswerInput = document.querySelector("#love-answer-input");
+      const pegAnswerInput = document.querySelector("#peg-answer-input");
+      const messageInput = document.querySelector("#message");
+      const status = document.querySelector("#status");
+      const hearts = document.querySelector("#hearts");
+
+      function floatHearts() {
+        const icons = ["♥", "♡"];
+
+        for (let index = 0; index < 12; index += 1) {
+          const heart = document.createElement("span");
+          heart.className = "heart";
+          heart.textContent = icons[index % icons.length];
+          heart.style.left = `${Math.random() * 100}%`;
+          heart.style.color = index % 2 === 0 ? "#f25f5c" : "#1b998b";
+          heart.style.animationDelay = `${Math.random() * 500}ms`;
+          hearts.appendChild(heart);
+          window.setTimeout(() => heart.remove(), 2800);
+        }
+      }
+
+      document.querySelectorAll(".choice").forEach((button) => {
+        button.addEventListener("click", () => {
+          const input =
+            button.dataset.target === "love" ? loveAnswerInput : pegAnswerInput;
+
+          input.value = button.dataset.answer;
+
+          document
+            .querySelectorAll(`.choice[data-target="${button.dataset.target}"]`)
+            .forEach((choice) => choice.classList.remove("is-selected"));
+
+          button.classList.add("is-selected");
+          status.textContent = "Perfect. Answer both, add a little note, then send it.";
+          floatHearts();
+          messageInput.focus();
+        });
+      });
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const formData = new FormData(form);
+
+        if (!messageInput.value.trim()) {
+          status.textContent = "Write a tiny note first.";
+          return;
+        }
+
+        if (!loveAnswerInput.value || !pegAnswerInput.value) {
+          status.textContent = "Answer both questions first.";
+          return;
+        }
+
+        if (!FORM_ENDPOINT) {
+          const savedAnswer = {
+            questionOne: formData.get("question_one"),
+            loveAnswer: formData.get("love_answer"),
+            questionTwo: formData.get("question_two"),
+            pegAnswer: formData.get("peg_answer"),
+            message: formData.get("message"),
+            submittedAt: new Date().toISOString(),
+          };
+
+          localStorage.setItem("latestLoveAnswer", JSON.stringify(savedAnswer));
+          status.textContent =
+            "Answer saved on this phone for testing. Add your Formspree endpoint so it gets sent to you.";
+          floatHearts();
+          return;
+        }
+
+        status.textContent = "Sending...";
+
+        try {
+          const response = await fetch(FORM_ENDPOINT, {
+            method: "POST",
+            body: formData,
+            headers: {
+              Accept: "application/json",
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error("The form service did not accept the response.");
+          }
+
+          status.textContent = "Sent. You just made his whole day.";
+          form.reset();
+          loveAnswerInput.value = "";
+          pegAnswerInput.value = "";
+          document
+            .querySelectorAll(".choice")
+            .forEach((choice) => choice.classList.remove("is-selected"));
+          floatHearts();
+        } catch (error) {
+          status.textContent =
+            "Something did not send. Try again in a minute, or text him your answer.";
+        }
+      });
+    </script>
+  </body>
+</html>
